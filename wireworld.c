@@ -10,14 +10,14 @@
 #define HEAD 0b00000001
 
 //neighbour values
-#define N1(x) (*(x-WIDTH-1))
-#define N2(x) (*(x-WIDTH))
-#define N3(x) (*(x-WIDTH+1))
-#define N4(x) (*(x-1))
-#define N5(x) (*(x+1))
-#define N6(x) (*(x+WIDTH-1))
-#define N7(x) (*(x+WIDTH))
-#define N8(x) (*(x+WIDTH+1))
+#define N1(x,w) (*(x-w-1))
+#define N2(x,w) (*(x-w))
+#define N3(x,w) (*(x-w+1))
+#define N4(x,w) (*(x-1))
+#define N5(x,w) (*(x+1))
+#define N6(x,w) (*(x+w-1))
+#define N7(x,w) (*(x+w))
+#define N8(x,w) (*(x+w+1))
 
 typedef unsigned char cell;
 
@@ -25,38 +25,35 @@ unsigned char not_negative_int(char * str);
 int get_argument(int argc, char *argv[]);
 char cell_to_text(cell c);
 void print_cells(cell * cells, unsigned int width, unsigned int height);
+void init();
+void iterate(unsigned int generations);
 
-int main(int argc, char *argv[])
+unsigned char board_width = 8;
+unsigned char board_height = 9;
+
+cell * arr1[WIDTH*HEIGHT];
+cell * arr2[WIDTH*HEIGHT];
+cell * arr3[WIDTH*HEIGHT];
+cell ** heads = arr1;
+cell ** tails = arr2;
+cell ** new = arr3;
+cell arr_cells[WIDTH*HEIGHT] = {
+    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+    EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY,
+    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
+    EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY,
+    EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY,
+    EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY,
+    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
+    EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY,
+    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY};
+cell * cells = arr_cells;
+
+int n_heads = 0, n_tails = 0, n_new = 0, current_gen = 0;
+
+void init()
 {
-    cell * arr1[WIDTH*HEIGHT];
-    cell * arr2[WIDTH*HEIGHT];
-    cell * arr3[WIDTH*HEIGHT];
-    cell ** heads = arr1;
-    cell ** tails = arr2;
-    cell ** new = arr3;
-    cell ** aux_ptr;
-    cell * cell_ptr;
-    cell cells[WIDTH*HEIGHT] = {
-        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-        EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY,
-        EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-        EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY,
-        EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY,
-        EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY,
-        EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-        EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY,
-        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY};
-
-    int i_cell, i_head, i_tail, i_new,line, col, sum, duplicate, generations;
-    int n_heads = 0, n_tails = 0, n_new = 0, i_gen;
-
-    //################################################################
-
-    //check arguments
-    generations = get_argument(argc, argv);
-    if(generations < 0) exit(-1);
-
-    //################################################################
+    unsigned int i_cell;
 
     //iterate cells and fill heads table and tails table
     for (i_cell = 0; i_cell < SIZE; i_cell++)
@@ -64,9 +61,15 @@ int main(int argc, char *argv[])
         if (cells[i_cell] == HEAD) heads[n_heads++] = &cells[i_cell];
         else if (cells[i_cell] == TAIL) tails[n_tails++] = &cells[i_cell];
     }
+}
 
-    printf("Generation 0:\n");
-    print_cells(cells, WIDTH, HEIGHT);
+void iterate(unsigned int generations)
+{
+    cell ** aux_ptr;
+    cell * cell_ptr;
+
+    unsigned int i_head, i_tail, i_new, i_gen, sum, duplicate;
+    int line, col;
 
     //################################################################
     for(i_gen = 0; i_gen < generations; i_gen++)
@@ -85,9 +88,9 @@ int main(int argc, char *argv[])
                     if (*cell_ptr == COPPER) 
                     {
                         //sum how many heads are around
-                        sum = (N1(cell_ptr) + N2(cell_ptr) + N3(cell_ptr) + 
-                            N4(cell_ptr) + N5(cell_ptr) + N6(cell_ptr) + 
-                            N7(cell_ptr) + N8(cell_ptr)) & 0x0f;
+                        sum = (N1(cell_ptr, WIDTH) + N2(cell_ptr, WIDTH) + N3(cell_ptr, WIDTH) + 
+                            N4(cell_ptr, WIDTH) + N5(cell_ptr, WIDTH) + N6(cell_ptr, WIDTH) + 
+                            N7(cell_ptr, WIDTH) + N8(cell_ptr, WIDTH)) & 0x0f;
                         
                         //rule says copper only turns into head if 1 or 2
                         if (sum == 1 || sum == 2)
@@ -133,11 +136,8 @@ int main(int argc, char *argv[])
         new = aux_ptr;
         n_new = 0;
 
-        printf("Generation %d:\n", i_gen+1);
-        print_cells(cells, WIDTH, HEIGHT);
+        current_gen++;
     }
-    
-    return 0;
 }
 
 unsigned char not_negative_int(char * str)
