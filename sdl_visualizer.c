@@ -65,46 +65,65 @@ void createSurface(void * pixels, unsigned int width, unsigned int height)
 	cell_surface = surface;
 }
 
+unsigned char poll_events()
+{
+	SDL_Event e;
+
+	while( SDL_PollEvent( &e ) != 0 )
+	{
+		if( e.type == SDL_QUIT )
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 int main( int argc, char* args[] )
 {
 	unsigned char quit = 0;
-	Uint32 last, now;
-	float fps = 0;
+	Uint32 last = 0, now;
+	float fps = 0, gps = 0;
+	char title[100] = "WireWorld (Generation: 0; FPS: 0)";
+	unsigned long long int last_gen = 0;
 	
 	init_sdl();	
-
-	SDL_Event e;
 	
 	createSurface((void *) cells, WIDTH, HEIGHT);
 	
 	init();
 	
-	last = SDL_GetTicks();
-	
 	while( !quit )
 	{
-		while( SDL_PollEvent( &e ) != 0 )
-		{
-			if( e.type == SDL_QUIT )
-			{
-				quit = 1;
-			}
-		}
-		
 		//iterate automaton
 		iterate(1);
-
-		SDL_BlitScaled(SDL_ConvertSurfaceFormat(cell_surface, screen_surface->format->format, 0), NULL, screen_surface, NULL );
-	
-		SDL_UpdateWindowSurface( window );
 		
 		now = SDL_GetTicks();
-		fps = (float)1000/(now-last);
-		//printf("FPS = %f\n", fps);
-		last = now;
-		SDL_Delay(100);
-		
-		//printf(SDL_GetError());
+		if ((now-last) >= 16)
+		{
+			//drawing
+			SDL_BlitScaled(SDL_ConvertSurfaceFormat(cell_surface, screen_surface->format->format, 0), NULL, screen_surface, NULL );
+			SDL_UpdateWindowSurface(window);
+
+			//FPS and GPS
+			fps = (float)1000/(now-last);
+			gps = fps * (current_gen-last_gen);
+
+			//title
+			sprintf(title, "WireWorld (Generation: %llu; GPS: %.2f; FPS: %.2f)", current_gen, gps, fps);
+			SDL_SetWindowTitle(window, title);
+
+			//events
+			quit = poll_events();
+
+			//update last
+			last = now;
+			last_gen = current_gen;
+		}
+
+		//prevent software from going too fast and hogging CPU power
+		//SDL_Delay(1);
 	}
 
 	close_sdl();

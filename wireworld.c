@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define WIDTH 8
-#define HEIGHT 9
+#define WIDTH 16
+#define HEIGHT 18
 #define SIZE WIDTH*HEIGHT
 #define EMPTY 0b10000000
 #define COPPER 0b01000000
@@ -26,10 +26,10 @@ int get_argument(int argc, char *argv[]);
 char cell_to_text(cell c);
 void print_cells(cell * cells, unsigned int width, unsigned int height);
 void init();
-void iterate(unsigned int generations);
+void iterate(unsigned long long int generations);
 
-unsigned char board_width = 8;
-unsigned char board_height = 9;
+//unsigned char board_width = 8;
+//unsigned char board_height = 9;
 
 cell * arr1[WIDTH*HEIGHT];
 cell * arr2[WIDTH*HEIGHT];
@@ -38,18 +38,28 @@ cell ** heads = arr1;
 cell ** tails = arr2;
 cell ** new = arr3;
 cell arr_cells[WIDTH*HEIGHT] = {
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY,
-    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-    EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY,
-    EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY,
-    EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY,
-    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY};
+    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+    EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY,
+    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
+    EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY,
+    EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY,
+    EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY,
+    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
+    EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY,
+    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+    EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY,
+    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
+    EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY,
+    EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY,
+    EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY,
+    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
+    EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY,
+    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY};
 cell * cells = arr_cells;
 
-int n_heads = 0, n_tails = 0, n_new = 0, current_gen = 0;
+int n_heads = 0, n_tails = 0, n_new = 0;
+unsigned long long int current_gen = 0;
 
 void init()
 {
@@ -63,13 +73,14 @@ void init()
     }
 }
 
-void iterate(unsigned int generations)
+void iterate(unsigned long long int generations)
 {
     cell ** aux_ptr;
     cell * cell_ptr;
 
-    unsigned int i_head, i_tail, i_new, i_gen, sum, duplicate;
+    unsigned int i_head, i_tail, i_new, sum, duplicate;
     int line, col;
+    unsigned long long int i_gen;
 
     //################################################################
     for(i_gen = 0; i_gen < generations; i_gen++)
