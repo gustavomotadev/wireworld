@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define WIDTH 16
-#define HEIGHT 18
-#define SIZE WIDTH*HEIGHT
+//#define board_width 32
+//#define board_height 36
+//#define n_cells board_width*board_height
 #define EMPTY 0b10000000
 #define COPPER 0b01000000
 #define TAIL 0b00100000
@@ -25,52 +25,59 @@ unsigned char not_negative_int(char * str);
 int get_argument(int argc, char *argv[]);
 char cell_to_text(cell c);
 void print_cells(cell * cells, unsigned int width, unsigned int height);
-void init();
+void init_automaton();
 void iterate(unsigned long long int generations);
 
-//unsigned char board_width = 8;
-//unsigned char board_height = 9;
+unsigned int board_width = 0;
+unsigned int board_height = 0;
+unsigned int n_cells = 0;
 
-cell * arr1[WIDTH*HEIGHT];
-cell * arr2[WIDTH*HEIGHT];
-cell * arr3[WIDTH*HEIGHT];
-cell ** heads = arr1;
-cell ** tails = arr2;
-cell ** new = arr3;
-cell arr_cells[WIDTH*HEIGHT] = {
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY,
-    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-    EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY,
-    EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY,
-    EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY,
-    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, COPPER, EMPTY, EMPTY, EMPTY,
-    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-    EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, COPPER, COPPER, EMPTY, COPPER, EMPTY,
-    EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, TAIL, EMPTY,
-    EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, COPPER, EMPTY, HEAD, EMPTY,
-    EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY, EMPTY, COPPER, COPPER, COPPER, EMPTY, COPPER, COPPER, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, COPPER, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY};
-cell * cells = arr_cells;
+cell ** heads;
+cell ** tails;
+cell ** new;
+cell * cells;
 
 int n_heads = 0, n_tails = 0, n_new = 0;
 unsigned long long int current_gen = 0;
 
-void init()
+void allocate_and_fill(char * file_name)
+{
+    unsigned int i;
+    unsigned int scan_uint;
+    FILE *csv_ptr;
+
+    csv_ptr = fopen(file_name, "r");
+
+    fscanf(csv_ptr, "%d,%d,", &board_width, &board_height);
+    n_cells = board_width*board_height;
+    printf("%d; %d; %d;\n", board_width, board_height, n_cells); //debug
+
+    heads = (cell **) malloc(n_cells*sizeof(cell *));
+    tails = (cell **) malloc(n_cells*sizeof(cell *));
+    new = (cell **) malloc(n_cells*sizeof(cell *));
+    cells = (cell *) malloc(n_cells*sizeof(cell));
+
+    for (i = 0; i < n_cells; i++)
+    {
+        fscanf(csv_ptr, "%d,", &scan_uint);
+        cells[i] = (cell) scan_uint;
+    }
+
+    fclose(csv_ptr);
+}
+
+void init_automaton()
 {
     unsigned int i_cell;
 
     //iterate cells and fill heads table and tails table
-    for (i_cell = 0; i_cell < SIZE; i_cell++)
+    for (i_cell = 0; i_cell < n_cells; i_cell++)
     {
         if (cells[i_cell] == HEAD) heads[n_heads++] = &cells[i_cell];
         else if (cells[i_cell] == TAIL) tails[n_tails++] = &cells[i_cell];
     }
+    //printf("HEADS: %d; TAILS: %d\n", n_heads, n_tails);
+    //printf("HEADS[0]: %d; TAILS[0]: %d\n", heads[0]-&cells[0], tails[0]-&cells[0]);
 }
 
 void iterate(unsigned long long int generations)
@@ -79,8 +86,10 @@ void iterate(unsigned long long int generations)
     cell * cell_ptr;
 
     unsigned int i_head, i_tail, i_new, sum, duplicate;
-    int line, col;
+    int line, col, board_width_int;
     unsigned long long int i_gen;
+
+    board_width_int = (int) board_width;
 
     //################################################################
     for(i_gen = 0; i_gen < generations; i_gen++)
@@ -91,17 +100,19 @@ void iterate(unsigned long long int generations)
         n_new = 0;
         for (i_head = 0; i_head < n_heads; i_head++)
         {
-            for(line = -WIDTH; line <= WIDTH; line += WIDTH)
+            //printf("HEAD: %d\n", heads[i_head]-&cells[0]);
+            for(line = -board_width_int; line <= board_width_int; line += board_width_int)
             {
                 for(col = -1; col <= 1; col++)
                 {
                     cell_ptr = heads[i_head]+line+col;
+                    //printf("%d: %d\n", *cell_ptr, cell_ptr-&cells[0]);
                     if (*cell_ptr == COPPER) 
                     {
                         //sum how many heads are around
-                        sum = (N1(cell_ptr, WIDTH) + N2(cell_ptr, WIDTH) + N3(cell_ptr, WIDTH) + 
-                            N4(cell_ptr, WIDTH) + N5(cell_ptr, WIDTH) + N6(cell_ptr, WIDTH) + 
-                            N7(cell_ptr, WIDTH) + N8(cell_ptr, WIDTH)) & 0x0f;
+                        sum = (N1(cell_ptr, board_width_int) + N2(cell_ptr, board_width_int) + N3(cell_ptr, board_width_int) + 
+                            N4(cell_ptr, board_width_int) + N5(cell_ptr, board_width_int) + N6(cell_ptr, board_width_int) + 
+                            N7(cell_ptr, board_width_int) + N8(cell_ptr, board_width_int)) & 0x0f;
                         
                         //rule says copper only turns into head if 1 or 2
                         if (sum == 1 || sum == 2)

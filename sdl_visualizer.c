@@ -86,17 +86,22 @@ int main( int argc, char* args[] )
 	Uint32 last = 0, now;
 	float fps = 0, gps = 0;
 	char title[100] = "WireWorld (Generation: 0; FPS: 0)";
-	unsigned long long int last_gen = 0;
+	unsigned long long int last_gen = 0;	
+
+	allocate_and_fill(".\\csv\\diode.csv");
+
+	init_automaton();
+
+	init_sdl();
 	
-	init_sdl();	
-	
-	createSurface((void *) cells, WIDTH, HEIGHT);
-	
-	init();
+	createSurface((void *) cells, board_width, board_height);
+
+	//initial iterations if necessary
+	//iterate(1);
 	
 	while( !quit )
 	{
-		//iterate automaton
+		//iterate automaton (independent from frame)
 		iterate(1);
 		
 		now = SDL_GetTicks();
@@ -120,6 +125,9 @@ int main( int argc, char* args[] )
 			//update last
 			last = now;
 			last_gen = current_gen;
+
+			//iterate on frame (debug)
+			//iterate(1);
 		}
 
 		//prevent software from going too fast and hogging CPU power

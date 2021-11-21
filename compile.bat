@@ -1,1 +1,1 @@
-gcc sdl_visualizer.c -I D:\SDL2-2.0.16\x86_64-w64-mingw32\include -L D:\SDL2-2.0.16\x86_64-w64-mingw32\lib -lmingw32 -lSDL2main -lSDL2 -o wireworld_visualizer.exe
+gcc sdl_visualizer.c -I D:\SDL2-2.0.16\x86_64-w64-mingw32\include -L D:\SDL2-2.0.16\x86_64-w64-mingw32\lib -lmingw32 -lSDL2main -lSDL2 -mwindows -o wireworld_visualizer.exe
