@@ -1,2 +1,2 @@
 # wireworld
-My implementation of the famous Cellullar Automaton named WireWorld, integration with SDL planned.
+My implementation of the famous Cellullar Automaton named WireWorld, has visualization with SDL.
