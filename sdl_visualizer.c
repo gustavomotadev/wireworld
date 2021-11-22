@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include "wireworld.c"
-#define MIN_SCREEN_WIDTH 256
-#define MIN_SCREEN_HEIGHT 256
+#define MIN_SCREEN_WIDTH 600
+#define MIN_SCREEN_HEIGHT 600
 
 void init_sdl();
 
@@ -114,10 +114,10 @@ int main( int argc, char* args[] )
 	while( !quit )
 	{
 		//iterate automaton (independent from frame)
-		iterate(1);
+		//iterate(1);
 		
 		now = SDL_GetTicks();
-		if ((now-last) >= 16)
+		if ((now-last) >= 100) //frametime
 		{
 			//drawing
 			SDL_BlitScaled(SDL_ConvertSurfaceFormat(cell_surface, screen_surface->format->format, 0), NULL, screen_surface, NULL );
@@ -138,12 +138,9 @@ int main( int argc, char* args[] )
 			last = now;
 			last_gen = current_gen;
 
-			//iterate on frame (debug)
-			//iterate(1);
+			//iterate on frame (to slow down)
+			iterate(1);
 		}
-
-		//prevent software from going too fast and hogging CPU power
-		//SDL_Delay(1);
 	}
 
 	close_sdl();
