@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include "wireworld.c"
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 640;
+#define MIN_SCREEN_WIDTH 256
+#define MIN_SCREEN_HEIGHT 256
 
 void init_sdl();
 
@@ -16,11 +16,16 @@ SDL_Surface * screen_surface = NULL;
 
 SDL_Surface * cell_surface = NULL;
 
-void init_sdl()
+void init_sdl(unsigned int width, unsigned int height)
 {
+	if (width < 256 || height < 256)
+	{
+		width = MIN_SCREEN_WIDTH;
+		height = MIN_SCREEN_HEIGHT;
+	}
 	SDL_Init(SDL_INIT_VIDEO);
 	window = SDL_CreateWindow("WireWorld", SDL_WINDOWPOS_UNDEFINED, 
-	SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
 	screen_surface = SDL_GetWindowSurface(window);
 }
 
@@ -88,11 +93,18 @@ int main( int argc, char* args[] )
 	char title[100] = "WireWorld (Generation: 0; FPS: 0)";
 	unsigned long long int last_gen = 0;	
 
-	allocate_and_fill(".\\csv\\diode.csv");
+	if (argc != 2) 
+    {
+        printf("Wrong number of arguments, pass filename.");
+        return -1;
+    }
+
+	//allocate_and_fill(".\\csv\\diode.csv");
+	allocate_and_fill(args[1]);
 
 	init_automaton();
 
-	init_sdl();
+	init_sdl(board_width, board_height);
 	
 	createSurface((void *) cells, board_width, board_height);
 

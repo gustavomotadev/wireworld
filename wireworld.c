@@ -27,6 +27,7 @@ char cell_to_text(cell c);
 void print_cells(cell * cells, unsigned int width, unsigned int height);
 void init_automaton();
 void iterate(unsigned long long int generations);
+void allocate_and_fill(char * file_name);
 
 unsigned int board_width = 0;
 unsigned int board_height = 0;
@@ -46,7 +47,9 @@ void allocate_and_fill(char * file_name)
     unsigned int scan_uint;
     FILE *csv_ptr;
 
-    csv_ptr = fopen(file_name, "r");
+    char csv_path[100] = ".\\csv\\";
+    strcat(csv_path, file_name);
+    csv_ptr = fopen(csv_path, "r");
 
     fscanf(csv_ptr, "%d,%d,", &board_width, &board_height);
     n_cells = board_width*board_height;

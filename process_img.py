@@ -1,4 +1,5 @@
 from PIL import Image
+from sys import argv
 
 pixel_to_cell = {
     (0,0,0): 0b10000000, #EMPTY
@@ -18,14 +19,19 @@ def to_csv_extension(file_name):
 
 if __name__ == '__main__':
 
-    img_name = r'diode.png'
+    if len(argv) != 2:
+        print("Pass image name.")
+        exit(-1)
+
+    img_name = argv[1]
 
     img = Image.open(IMG_FOLDER + img_name)
 
     pixels = img.getdata()
+
     cells = map(lambda p: pixel_to_cell[p], pixels)
 
     with open(CSV_FOLDER + to_csv_extension(img_name), 'w') as csv_file:
-        csv_file.write(f'{img.width} {img.height},\n')
+        csv_file.write(f'{img.width},{img.height},\n')
         for cell in cells:
-            csv_file.write(f'{cell} ')
+            csv_file.write(f'{cell},')
